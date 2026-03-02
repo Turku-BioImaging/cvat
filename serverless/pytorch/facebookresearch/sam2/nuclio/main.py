@@ -2,12 +2,14 @@
 #
 # SPDX-License-Identifier: MIT
 
-import json
+
 import base64
-from PIL import Image
 import io
+import json
+
 import numpy as np
-import torch 
+from PIL import Image
+
 from model_handler import ModelHandler
 
 
@@ -21,41 +23,43 @@ def init_context(context):
 def handler(context, event):
     context.logger.info("call handler")
     data = event.body
+
+    # --- Parse CVAT interactor payload ---
+    # CVAT sends pos_points, neg_points, and obj_bbox for interactors
+    pos_points = data.get("pos_points", [])
+    neg_points = data.get("neg_points", [])
+    obj_bbox = data.get("obj_bbox", None)
+    threshold = float(data.get("threshold", 0.0))
+
     buf = io.BytesIO(base64.b64decode(data["image"]))
-    image = Image.open(buf)
-    image = image.convert("RGB")  #  to make sure image comes in RGB
-    features = context.user_data.model.handle(image)
+    pil = Image.open(buf).convert("RGB")
+    img = np.array(pil, dtype=np.uint8)
 
-    # return context.Response(
-    #     body=json.dumps(
-    #         {
-    #             "blob": base64.b64encode(
-    #                 features.cpu().numpy() if features.is_cuda else features.numpy()
-    #             ).decode(),
-    #         }
-    #     ),
-    #     headers={},
-    #     content_type="application/json",
-    #     status_code=200,
-    # )
-
-# ---- convert features -> contiguous numpy ----
-    if torch.is_tensor(features):
-        features_np = features.detach().to("cpu").contiguous().numpy()
-    else:
-        features_np = np.asarray(features)
-
-    features_np = np.ascontiguousarray(features_np)
-
-    payload = {
-        "blob": base64.b64encode(features_np.tobytes()).decode("utf-8"),
-        "dtype": str(features_np.dtype),
-        "shape": list(features_np.shape),
-    }
+    result = context.user_data.model.handle(
+        image_rgb_uint8=img,
+        pos_points=pos_points,
+        neg_points=neg_points,
+        obj_bbox=obj_bbox,
+        threshold=threshold,
+        multimask_output=True,
+    )
 
     return context.Response(
-        body=json.dumps(payload),
+        body=json.dumps({
+            "points": result.polygon,
+            "mask": result.mask_u8.tolist(),
+            "score": result.score,
+        }),
         headers={},
         content_type="application/json",
         status_code=200,
     )
+
+
+
+
+
+
+
+
+    

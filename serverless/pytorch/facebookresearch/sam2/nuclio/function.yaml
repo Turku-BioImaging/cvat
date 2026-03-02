@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 metadata:
-  name: pth-facebookresearch-sam2-hiera-base-plus
+  name: pth-facebookresearch-sam2-large
   namespace: cvat
   annotations:
     name: Segment Anything 2
@@ -48,7 +48,7 @@ spec:
           value: pip3 install git+https://github.com/facebookresearch/sam2.git --no-cache-dir
       # download sam weights
         - kind: RUN
-          value: curl -O https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt
+          value: curl -O https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt
 
   triggers:
     myHttpTrigger:

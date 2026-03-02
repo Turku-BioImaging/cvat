@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: MIT
 
 metadata:
-  name: pth-facebookresearch-sam2-hiera-base-plus
+  name: pth-facebookresearch-sam2-hiera-large
   namespace: cvat
   annotations:
-    name: Segment Anything 2 (Hiera Base Plus)
+    name: Segment Anything 2 (large)
     version: 2
     type: interactor
     spec:
@@ -26,7 +26,7 @@ spec:
       value: /opt/nuclio/sam2
 
   build:
-    image: cvat.pth.facebookresearch.sam2.hiera_base_plus:latest-gpu
+    image: cvat.pth.facebookresearch.sam2.hiera_large:latest-gpu
     baseImage: ubuntu:22.04
 
     directives:
@@ -56,7 +56,7 @@ spec:
           value: pip3 install --no-build-isolation git+https://github.com/facebookresearch/sam2.git --no-cache-dir
       # download sam weights
         - kind: RUN
-          value: curl -O https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt
+          value: curl -O https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt
 
   triggers:
     myHttpTrigger:
